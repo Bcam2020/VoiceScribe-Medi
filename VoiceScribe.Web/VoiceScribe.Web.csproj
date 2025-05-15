@@ -10,4 +10,8 @@
     <ProjectReference Include="..\VoiceScribe.ServiceDefaults\VoiceScribe.ServiceDefaults.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="NewFolder\" />
+  </ItemGroup>
+
 </Project>
