@@ -1,6 +1,5 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -11,10 +10,14 @@
     <link rel="icon" type="image/png" href="favicon.png" />
     <HeadOutlet />
 </head>
-
 <body>
     <Routes />
     <script src="_framework/blazor.web.js"></script>
+    <!-- Add this line to include the audioRecorder.js file -->
+    <script src="js/audioRecorder.js"></script>
+    <!-- Add a polyfill for AudioContext for future enhancements -->
+    <script>
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+    </script>
 </body>
-
 </html>

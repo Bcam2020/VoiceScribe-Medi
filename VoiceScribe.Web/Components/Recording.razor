@@ -8,39 +8,58 @@
 
 <PageTitle>Voice Recording</PageTitle>
 
+<!-- Add script reference here -->
+<script src="js/audioRecorder.js"></script>
+
 <h1>Medical Voice Recording</h1>
+
+<!-- Rest of component -->
 
 <div class="row mb-4">
     <div class="col-md-6">
-        <div class="form-group">
+        <div class="form-group mb-3">
             <label for="patientReference">Patient Reference:</label>
             <input id="patientReference" class="form-control" @bind="patientReference" />
         </div>
-    </div>
-</div>
 
-<div class="recording-controls mb-4">
-    <button class="btn btn-primary me-2" @onclick="StartRecording" disabled="@isRecording">
-        <i class="oi oi-microphone"></i> Start Recording
-    </button>
-    <button class="btn btn-danger" @onclick="StopRecording" disabled="@(!isRecording)">
-        <i class="oi oi-media-stop"></i> Stop Recording
-    </button>
-</div>
-
-@if (isRecording)
-{
-    <div class="alert alert-info">
-        <div class="spinner-border spinner-border-sm" role="status">
-            <span class="visually-hidden">Recording...</span>
+        <div class="recording-controls mb-3">
+            @if (!isRecording)
+            {
+                <button class="btn btn-primary" @onclick="StartRecording">
+                    <i class="bi bi-mic-fill me-2"></i>Start Recording
+                </button>
+            }
+            else
+            {
+                <button class="btn btn-danger" @onclick="StopRecording">
+                    <i class="bi bi-stop-fill me-2"></i>Stop Recording
+                </button>
+            }
         </div>
-        Recording in progress...
+
+        @if (isRecording)
+        {
+            <div class="recording-status">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="recording-indicator me-2"></div>
+                    <div>Recording in progress...</div>
+                </div>
+            </div>
+        }
+
+        @if (errorMessage != null)
+        {
+            <div class="alert alert-danger mt-3">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                @errorMessage
+            </div>
+        }
     </div>
-}
+</div>
 
 @if (isProcessing)
 {
-    <div class="alert alert-warning">
+    <div class="alert alert-info">
         <div class="spinner-border spinner-border-sm" role="status">
             <span class="visually-hidden">Processing...</span>
         </div>
@@ -52,16 +71,59 @@
     private string patientReference = "";
     private bool isRecording = false;
     private bool isProcessing = false;
+    private string? errorMessage = null;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Test if JavaScript is loaded
+            try
+            {
+                var result = await JSRuntime.InvokeAsync<bool>("eval", "typeof window.audioRecorder !== 'undefined'");
+                Console.WriteLine($"AudioRecorder exists: {result}");
+
+                if (result)
+                {
+                    // Call test function
+                    await JSRuntime.InvokeAsync<bool>("audioRecorder.testFunction");
+                }
+                else
+                {
+                    Console.WriteLine("AudioRecorder not found!");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error checking audioRecorder: {ex.Message}");
+            }
+        }
+    }
 
     private async Task StartRecording()
     {
-        isRecording = true;
-        var success = await JSRuntime.InvokeAsync<bool>("audioRecorder.startRecording");
+        errorMessage = null;
 
-        if (!success)
+        try
         {
-            isRecording = false;
-            // Show error message
+            Console.WriteLine("Calling startRecording function...");
+            var success = await JSRuntime.InvokeAsync<bool>("audioRecorder.startRecording");
+            Console.WriteLine($"StartRecording result: {success}");
+
+            if (success)
+            {
+                isRecording = true;
+                StateHasChanged();
+            }
+            else
+            {
+                errorMessage = "Failed to start recording. Please check microphone permissions.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+            Console.Error.WriteLine(ex);
         }
     }
 
@@ -69,10 +131,13 @@
     {
         isRecording = false;
         isProcessing = true;
+        StateHasChanged();
 
         try
         {
+            Console.WriteLine("Calling stopRecording function...");
             var result = await JSRuntime.InvokeAsync<RecordingResult>("audioRecorder.stopRecording");
+            Console.WriteLine($"Got transcription result: {result.Transcription}");
 
             // Use the browser's transcription
             var command = new CreateTranscriptionCommand(patientReference, result.AudioBytes);
@@ -82,12 +147,10 @@
         }
         catch (Exception ex)
         {
+            errorMessage = $"Error processing recording: {ex.Message}";
             Console.Error.WriteLine(ex);
-            // Handle error
-        }
-        finally
-        {
             isProcessing = false;
+            StateHasChanged();
         }
     }
 }
