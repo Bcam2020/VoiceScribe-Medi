@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VoiceScribe.Application\VoiceScribe.Application.csproj" />
+    <ProjectReference Include="..\VoiceScribe.Domain\VoiceScribe.Domain.csproj" />
+    <ProjectReference Include="..\VoiceScribe.Infrastructure\VoiceScribe.Infrastructure.csproj" />
+    <ProjectReference Include="..\VoiceScribe.ServiceDefaults\VoiceScribe.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VoiceScribe.Web\VoiceScribe.Web.csproj" />
+  </ItemGroup>
+
+</Project>
