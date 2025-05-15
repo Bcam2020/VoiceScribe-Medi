@@ -1,6 +1,7 @@
 ﻿@page "/recording"
 @using VoiceScribe.Application.Transcriptions.Commands
 @using VoiceScribe.Application.Transcriptions.Services
+@using VoiceScribe.Web.Models
 @inject TranscriptionService TranscriptionService
 @inject IJSRuntime JSRuntime
 @inject NavigationManager NavigationManager
@@ -20,16 +21,29 @@
 
 <div class="recording-controls mb-4">
     <button class="btn btn-primary me-2" @onclick="StartRecording" disabled="@isRecording">
-        <i class="bi bi-mic-fill"></i> Start Recording
+        <i class="oi oi-microphone"></i> Start Recording
     </button>
     <button class="btn btn-danger" @onclick="StopRecording" disabled="@(!isRecording)">
-        <i class="bi bi-stop-fill"></i> Stop Recording
+        <i class="oi oi-media-stop"></i> Stop Recording
     </button>
 </div>
 
-@if (isProcessing)
+@if (isRecording)
 {
     <div class="alert alert-info">
+        <div class="spinner-border spinner-border-sm" role="status">
+            <span class="visually-hidden">Recording...</span>
+        </div>
+        Recording in progress...
+    </div>
+}
+
+@if (isProcessing)
+{
+    <div class="alert alert-warning">
+        <div class="spinner-border spinner-border-sm" role="status">
+            <span class="visually-hidden">Processing...</span>
+        </div>
         Processing your recording...
     </div>
 }
@@ -58,13 +72,12 @@
 
         try
         {
-            var audioBytes = await JSRuntime.InvokeAsync<byte[]>("audioRecorder.stopRecording");
+            var result = await JSRuntime.InvokeAsync<RecordingResult>("audioRecorder.stopRecording");
 
-            // Use the service directly
-            var command = new CreateTranscriptionCommand(patientReference, audioBytes);
-            var id = await TranscriptionService.CreateTranscriptionAsync(command);
+            // Use the browser's transcription
+            var command = new CreateTranscriptionCommand(patientReference, result.AudioBytes);
+            var id = await TranscriptionService.CreateTranscriptionAsync(command, result.Transcription);
 
-            // Navigate to the transcription view
             NavigationManager.NavigateTo($"/transcriptions/{id}");
         }
         catch (Exception ex)

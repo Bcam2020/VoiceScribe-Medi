@@ -19,10 +19,13 @@ public class TranscriptionService
         _speechService = speechService;
     }
 
-    public async Task<Guid> CreateTranscriptionAsync(CreateTranscriptionCommand command)
+    // Add this method to your existing TranscriptionService class
+    public async Task<Guid> CreateTranscriptionAsync(CreateTranscriptionCommand command, string providedTranscription = null)
     {
-        // Transcribe audio
-        string content = await _speechService.TranscribeAudioAsync(command.AudioData);
+        // Use provided transcription if available, otherwise transcribe audio
+        string content = !string.IsNullOrEmpty(providedTranscription)
+            ? providedTranscription
+            : await _speechService.TranscribeAudioAsync(command.AudioData);
 
         // Create domain entity
         var transcription = new Transcription(command.PatientReference);

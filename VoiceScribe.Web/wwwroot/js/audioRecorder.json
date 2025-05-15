@@ -1,0 +1,86 @@
+window.audioRecorder = {
+    mediaRecorder: null,
+    audioChunks: [],
+    recognition: null,
+    transcriptionText: '',
+    
+    startRecording: async function() {
+        try {
+            // Start audio recording
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            this.mediaRecorder = new MediaRecorder(stream);
+            this.audioChunks = [];
+            
+            this.mediaRecorder.addEventListener("dataavailable", event => {
+                this.audioChunks.push(event.data);
+            });
+            
+            this.mediaRecorder.start(1000); // Capture in 1-second chunks
+            
+            // Set up speech recognition
+            this.transcriptionText = '';
+            
+            // Initialize speech recognition with browser compatibility
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                console.error("Speech recognition not supported in this browser");
+                return true; // Still allow recording even if speech recognition fails
+            }
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            this.recognition = new SpeechRecognition();
+            this.recognition.continuous = true;
+            this.recognition.interimResults = false;
+            this.recognition.lang = 'en-US';
+            
+            this.recognition.onresult = (event) => {
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    if (event.results[i].isFinal) {
+                        this.transcriptionText += event.results[i][0].transcript + ' ';
+                    }
+                }
+                console.log("Current transcription:", this.transcriptionText);
+            };
+            
+            this.recognition.onerror = (event) => {
+                console.error("Speech recognition error:", event.error);
+            };
+            
+            this.recognition.start();
+            return true;
+        } catch (error) {
+            console.error("Error starting recording:", error);
+            return false;
+        }
+    },
+    
+    stopRecording: function() {
+        return new Promise((resolve) => {
+            // Stop speech recognition if it was started
+            if (this.recognition) {
+                try {
+                    this.recognition.stop();
+                } catch (e) {
+                    console.error("Error stopping recognition:", e);
+                }
+            }
+            
+            // Handler for when recording is stopped
+            const handleStop = async () => {
+                // Create audio blob from recorded chunks
+                const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+                const arrayBuffer = await audioBlob.arrayBuffer();
+                const bytes = new Uint8Array(arrayBuffer);
+                
+                // Return both audio bytes and transcription
+                resolve({
+                    audioBytes: Array.from(bytes),
+                    transcription: this.transcriptionText.trim()
+                });
+            };
+            
+            // Add the event listener and stop the recorder
+            this.mediaRecorder.addEventListener("stop", handleStop, { once: true });
+            this.mediaRecorder.stop();
+        });
+    }
+};
