@@ -1,10 +1,5 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-var apiService = builder.AddProject<Projects.VoiceScribe_ApiService>("apiservice");
-
-builder.AddProject<Projects.VoiceScribe_Web>("webfrontend")
-    .WithExternalHttpEndpoints()
-    .WithReference(apiService)
-    .WaitFor(apiService);
+var webApp = builder.AddProject<Projects.VoiceScribe_Web>("webapp");
 
 builder.Build().Run();

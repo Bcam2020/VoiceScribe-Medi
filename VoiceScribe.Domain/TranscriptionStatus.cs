@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace VoiceScribe.Domain;
 
-namespace VoiceScribe.Domain
+public enum TranscriptionStatus
 {
-    internal class TranscriptionStatus
-    {
-    }
+    Draft,
+    InReview,
+    Completed
 }

@@ -1,0 +1,101 @@
+﻿@page "/transcriptions"
+@page "/transcriptions/{Id:guid}"
+@inject TranscriptionService TranscriptionService
+
+<PageTitle>Transcriptions</PageTitle>
+
+<h1>Transcriptions</h1>
+
+@if (Id != null)
+{
+    <div class="mb-4">
+        <h2>Transcription Details</h2>
+
+        @if (currentTranscription == null)
+        {
+            <p>Loading...</p>
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-header">
+                    Patient: @currentTranscription.PatientReference
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">Status: @currentTranscription.Status</h5>
+                    <p class="card-text">@currentTranscription.Content</p>
+                    <p class="text-muted">Created: @currentTranscription.CreatedAt.ToString("g")</p>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="mb-4">
+        <a href="/recording" class="btn btn-primary">
+            <i class="bi bi-mic"></i> New Recording
+        </a>
+    </div>
+
+    @if (transcriptions == null)
+    {
+        <p>Loading...</p>
+    }
+    else if (!transcriptions.Any())
+    {
+        <div class="alert alert-info">
+            No transcriptions yet. Start by creating a new recording.
+        </div>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Created</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var transcription in transcriptions)
+                {
+                    <tr>
+                        <td>@transcription.PatientReference</td>
+                        <td>@transcription.CreatedAt.ToString("g")</td>
+                        <td>@transcription.Status</td>
+                        <td>
+                            <a href="/transcriptions/@transcription.Id" class="btn btn-sm btn-info">
+                                View
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    private IEnumerable<TranscriptionDto>? transcriptions;
+    private TranscriptionDto? currentTranscription;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id.HasValue)
+        {
+            var query = new GetTranscriptionQuery(Id.Value);
+            currentTranscription = await TranscriptionService.GetTranscriptionAsync(query);
+        }
+        else
+        {
+            var query = new GetAllTranscriptionsQuery();
+            transcriptions = await TranscriptionService.GetAllTranscriptionsAsync(query);
+        }
+    }
+}

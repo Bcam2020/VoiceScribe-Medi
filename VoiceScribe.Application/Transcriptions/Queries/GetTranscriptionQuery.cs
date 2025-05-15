@@ -1,12 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace VoiceScribe.Application.Transcriptions.Queries;
 
-namespace VoiceScribe.Application.Transcriptions.Queries
-{
-    internal class GetTranscriptionQuery
-    {
-    }
-}
+public record GetTranscriptionQuery(Guid Id);

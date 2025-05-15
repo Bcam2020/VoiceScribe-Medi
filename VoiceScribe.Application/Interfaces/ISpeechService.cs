@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace VoiceScribe.Application.Interfaces;
 
-namespace VoiceScribe.Application.Interfaces
+public interface ISpeechService
 {
-    internal interface ISpeechService
-    {
-    }
+    Task<string> TranscribeAudioAsync(byte[] audioData);
 }
