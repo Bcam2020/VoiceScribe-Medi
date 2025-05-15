@@ -1,4 +1,5 @@
-﻿using VoiceScribe.Domain;
+﻿// Make sure using directive is correct
+using VoiceScribe.Domain;
 
 namespace VoiceScribe.Application.Interfaces;
 

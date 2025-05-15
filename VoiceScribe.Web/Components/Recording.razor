@@ -1,101 +1,80 @@
-﻿@page "/transcriptions"
-@page "/transcriptions/{Id:guid}"
+﻿@page "/recording"
+@using VoiceScribe.Application.Transcriptions.Commands
+@using VoiceScribe.Application.Transcriptions.Services
 @inject TranscriptionService TranscriptionService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
 
-<PageTitle>Transcriptions</PageTitle>
+<PageTitle>Voice Recording</PageTitle>
 
-<h1>Transcriptions</h1>
+<h1>Medical Voice Recording</h1>
 
-@if (Id != null)
-{
-    <div class="mb-4">
-        <h2>Transcription Details</h2>
-
-        @if (currentTranscription == null)
-        {
-            <p>Loading...</p>
-        }
-        else
-        {
-            <div class="card">
-                <div class="card-header">
-                    Patient: @currentTranscription.PatientReference
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">Status: @currentTranscription.Status</h5>
-                    <p class="card-text">@currentTranscription.Content</p>
-                    <p class="text-muted">Created: @currentTranscription.CreatedAt.ToString("g")</p>
-                </div>
-            </div>
-        }
-    </div>
-}
-else
-{
-    <div class="mb-4">
-        <a href="/recording" class="btn btn-primary">
-            <i class="bi bi-mic"></i> New Recording
-        </a>
-    </div>
-
-    @if (transcriptions == null)
-    {
-        <p>Loading...</p>
-    }
-    else if (!transcriptions.Any())
-    {
-        <div class="alert alert-info">
-            No transcriptions yet. Start by creating a new recording.
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="patientReference">Patient Reference:</label>
+            <input id="patientReference" class="form-control" @bind="patientReference" />
         </div>
-    }
-    else
-    {
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Patient</th>
-                    <th>Created</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var transcription in transcriptions)
-                {
-                    <tr>
-                        <td>@transcription.PatientReference</td>
-                        <td>@transcription.CreatedAt.ToString("g")</td>
-                        <td>@transcription.Status</td>
-                        <td>
-                            <a href="/transcriptions/@transcription.Id" class="btn btn-sm btn-info">
-                                View
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
+    </div>
+</div>
+
+<div class="recording-controls mb-4">
+    <button class="btn btn-primary me-2" @onclick="StartRecording" disabled="@isRecording">
+        <i class="bi bi-mic-fill"></i> Start Recording
+    </button>
+    <button class="btn btn-danger" @onclick="StopRecording" disabled="@(!isRecording)">
+        <i class="bi bi-stop-fill"></i> Stop Recording
+    </button>
+</div>
+
+@if (isProcessing)
+{
+    <div class="alert alert-info">
+        Processing your recording...
+    </div>
 }
 
 @code {
-    [Parameter]
-    public Guid? Id { get; set; }
+    private string patientReference = "";
+    private bool isRecording = false;
+    private bool isProcessing = false;
 
-    private IEnumerable<TranscriptionDto>? transcriptions;
-    private TranscriptionDto? currentTranscription;
-
-    protected override async Task OnInitializedAsync()
+    private async Task StartRecording()
     {
-        if (Id.HasValue)
+        isRecording = true;
+        var success = await JSRuntime.InvokeAsync<bool>("audioRecorder.startRecording");
+
+        if (!success)
         {
-            var query = new GetTranscriptionQuery(Id.Value);
-            currentTranscription = await TranscriptionService.GetTranscriptionAsync(query);
+            isRecording = false;
+            // Show error message
         }
-        else
+    }
+
+    private async Task StopRecording()
+    {
+        isRecording = false;
+        isProcessing = true;
+
+        try
         {
-            var query = new GetAllTranscriptionsQuery();
-            transcriptions = await TranscriptionService.GetAllTranscriptionsAsync(query);
+            var audioBytes = await JSRuntime.InvokeAsync<byte[]>("audioRecorder.stopRecording");
+
+            // Use the service directly
+            var command = new CreateTranscriptionCommand(patientReference, audioBytes);
+            var id = await TranscriptionService.CreateTranscriptionAsync(command);
+
+            // Navigate to the transcription view
+            NavigationManager.NavigateTo($"/transcriptions/{id}");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            // Handle error
+        }
+        finally
+        {
+            isProcessing = false;
         }
     }
 }

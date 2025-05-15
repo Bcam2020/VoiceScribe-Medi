@@ -1,8 +1,13 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceScribe.AppHost", "VoiceScribe.AppHost\VoiceScribe.AppHost.csproj", "{B8F26EA8-38CE-499F-AFBC-B5131F961D61}"
+	ProjectSection(ProjectDependencies) = postProject
+		{19648BF3-C63A-41A2-B448-75FD61005694} = {19648BF3-C63A-41A2-B448-75FD61005694}
+		{25F13A06-2A04-4B7D-8AD7-FFFD1A741FE3} = {25F13A06-2A04-4B7D-8AD7-FFFD1A741FE3}
+		{BBCB3B37-F83C-4D9D-8662-778C2DC94B89} = {BBCB3B37-F83C-4D9D-8662-778C2DC94B89}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VoiceScribe.ServiceDefaults", "VoiceScribe.ServiceDefaults\VoiceScribe.ServiceDefaults.csproj", "{3B2B2702-E323-4578-B06D-9DFE35F49338}"
 EndProject
