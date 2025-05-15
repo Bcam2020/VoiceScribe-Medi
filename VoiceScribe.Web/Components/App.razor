@@ -13,11 +13,35 @@
 <body>
     <Routes />
     <script src="_framework/blazor.web.js"></script>
-    <!-- Add this line to include the audioRecorder.js file -->
-    <script src="js/audioRecorder.js"></script>
-    <!-- Add a polyfill for AudioContext for future enhancements -->
+
+    <!-- Debug script for troubleshooting -->
     <script>
-        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        console.log("Inline script running...");
+        // Debug global access
+        window.debugBlazor = {
+            checkAudioRecorder: function() {
+                console.log("Checking audioRecorder availability");
+                if (typeof window.audioRecorder !== 'undefined') {
+                    console.log("audioRecorder found!");
+                    window.audioRecorderInitialized = true;
+                    return true;
+                } else {
+                    console.log("audioRecorder NOT found!");
+                    return false;
+                }
+            },
+            forceInitialize: function() {
+                console.log("Force initializing audioRecorder");
+                window.audioRecorderInitialized = true;
+                return true;
+            }
+        };
     </script>
+
+    <!-- Add test.js before audioRecorder.js -->
+    <script src="js/test.js"></script>
+
+    <!-- Then add the audioRecorder.js file -->
+    <script src="js/audioRecorder.js"></script>
 </body>
 </html>

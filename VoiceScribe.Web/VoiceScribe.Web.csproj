@@ -5,9 +5,6 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 	<ItemGroup>
-	  <Content Include="Components\Recording.razor.cc" />
-	</ItemGroup>
-	<ItemGroup>
 		<ProjectReference Include="..\VoiceScribe.Domain\VoiceScribe.Domain.csproj" />
 		<ProjectReference Include="..\VoiceScribe.Application\VoiceScribe.Application.csproj" />
 		<ProjectReference Include="..\VoiceScribe.Infrastructure\VoiceScribe.Infrastructure.csproj" />
